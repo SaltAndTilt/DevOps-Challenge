@@ -255,7 +255,7 @@ resource "azurerm_monitor_action_group" "ag" {
 
   email_receiver {
     name = "sendtoadmin"
-    email_address = "gaming@maximumsalt.de"
+    email_address = "test@test.de"
     use_common_alert_schema = true
   }
 }
