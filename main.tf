@@ -273,6 +273,10 @@ resource "azurerm_monitor_metric_alert" "cpualert"{
     operator          = "GreaterThan"
     threshold         = 40
   }
+  action {
+    action_group_id = azurerm_monitor_action_group.ag.id
+  }  
+  
 }
 
 #dashboard
