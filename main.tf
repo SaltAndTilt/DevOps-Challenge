@@ -20,6 +20,17 @@ data "azurerm_resource_group" "rg" {
 data "azurerm_subscription" "sub" {
 }
 
+
+#Public IP wird generiert
+resource "azurerm_public_ip" "public_nginx" {
+    name                = "nginx-publicIP"
+    resource_group_name = data.azurerm_resource_group.rg.name
+    location            = data.azurerm_resource_group.rg.location
+    allocation_method   = "Static"
+
+    domain_name_label   = "challengenginx"
+}
+
 #Virtuelles Netzwerk bereit gestellt
 resource "azurerm_virtual_network" "nginx_network"{
     name                = "nginx_network"
@@ -57,16 +68,6 @@ resource "azurerm_network_security_group" "nsg" {
 resource "azurerm_subnet_network_security_group_association" "example" {
   subnet_id                 = azurerm_subnet.subnet.id
   network_security_group_id = azurerm_network_security_group.nsg.id
-}
-
-#Public IP wird generiert
-resource "azurerm_public_ip" "public_nginx" {
-    name                = "nginx-publicIP"
-    resource_group_name = data.azurerm_resource_group.rg.name
-    location            = data.azurerm_resource_group.rg.location
-    allocation_method   = "Static"
-
-    domain_name_label   = "devopsjakobcgi"
 }
 
 #LB für Scaleset aufbauen
@@ -249,19 +250,19 @@ resource "azurerm_log_analytics_solution" "vminsights" {
 #Einrichtung Monitor+Alert
 
 resource "azurerm_monitor_action_group" "ag" {
-  name = "monitoringgroup"
+  name = "actiongroup"
   resource_group_name = data.azurerm_resource_group.rg.name
-  short_name  = "monitoring"
+  short_name  = "ag_mon"
 
   email_receiver {
     name = "sendtoadmin"
-    email_address = "test@test.de"
+    email_address = "mail@mail.de"
     use_common_alert_schema = true
   }
 }
 
 resource "azurerm_monitor_metric_alert" "cpualert"{
-  name = "nginx-cpu-load-alert"
+  name = "avg-cpu-high"
   resource_group_name = data.azurerm_resource_group.rg.name
   scopes = [azurerm_linux_virtual_machine_scale_set.nginx.id]
   description = "Warnung wird ausgelöst wenn CPU-Load über 40% liegt"
@@ -273,10 +274,11 @@ resource "azurerm_monitor_metric_alert" "cpualert"{
     operator          = "GreaterThan"
     threshold         = 40
   }
+
   action {
     action_group_id = azurerm_monitor_action_group.ag.id
-  }  
-  
+  }
+
 }
 
 #dashboard
